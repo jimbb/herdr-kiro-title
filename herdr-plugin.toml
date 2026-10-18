@@ -1,0 +1,26 @@
+id = "kiro-title"
+version = "0.1.0"
+min_herdr_version = "0.9.0"
+description = "Auto-titles Kiro CLI panes with a short, model-written summary of the current task (parity with codex/grok titles)."
+platforms = ["linux", "macos"]
+
+# On link/enable, install a Kiro `UserPromptSubmit` hook that captures the
+# prompt reliably (pane scraping is unreliable while the agent is mid-turn) and
+# publishes a title via `herdr pane report-metadata`.
+[[startup]]
+command = ["bash", "scripts/install-kiro-hook.sh"]
+
+# Fallback / on-demand: retitle a Kiro pane from its latest prompt by scraping
+# the transcript. Useful for panes started before the hook was installed.
+[[actions]]
+id = "retitle"
+title = "Kiro: retitle pane from current task"
+description = "Summarize the latest prompt in the focused Kiro pane and set it as the title."
+contexts = ["workspace"]
+command = ["bash", "scripts/retitle.sh"]
+
+# Secondary signal: when a Kiro pane starts working and still has no title,
+# try the scrape-based fallback. The primary path is the installed Kiro hook.
+[[events]]
+on = "pane.agent_status_changed"
+command = ["bash", "scripts/on-agent-status.sh"]
