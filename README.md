@@ -50,19 +50,23 @@ herdr pane report-metadata <pane> --source kiro-title --title "<summary> | <repo
 
 Pieces:
 
-- `herdr-plugin.toml` — declares a `startup` installer, a `retitle` action, and
-  a `pane.agent_status_changed` fallback event.
-- `scripts/install-kiro-hook.sh` — runs on link/enable; writes
-  `~/.kiro/hooks/kiro-title.json` pointing at `scripts/prompt-title.sh`.
+- `herdr-plugin.toml` — declares a `retitle` action and a
+  `pane.agent_status_changed` event.
+- `scripts/on-agent-status.sh` — the event handler: on the first event it sees,
+  it idempotently installs the Kiro hook (see below); it also provides a
+  best-effort scrape-based fallback for panes that entered `working` with no
+  title.
+- `scripts/install-kiro-hook.sh` — writes `~/.kiro/hooks/kiro-title.json`
+  pointing at `scripts/prompt-title.sh`.
 - `scripts/prompt-title.sh` — the Kiro hook entrypoint: extracts the prompt,
   summarizes, titles the pane.
-- `scripts/on-agent-status.sh` — fallback for panes that started before the
-  hook existed: on a Kiro pane entering `working` with no title, scrape the
-  transcript and title it (best-effort).
+- `scripts/retitle.sh` — the manual `retitle` action.
 - `scripts/lib.sh` — shared summarizer + helpers.
 
-> The installed Kiro hook takes effect on the **next** Kiro session start in a
-> pane. Already-running panes are covered by the fallback action/event.
+> The Kiro hook is installed automatically the first time Herdr delivers a
+> `pane.agent_status_changed` event after the plugin is linked. It then takes
+> effect on the **next** Kiro session start in a pane; already-running panes are
+> covered by the fallback action/event.
 
 ## Uninstall
 
