@@ -8,7 +8,17 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib.sh
 . "$DIR/lib.sh"
 
-payload="$(cat 2>/dev/null)"
+# Self-heal: ensure the Kiro UserPromptSubmit hook is installed. The plugin's
+# `startup` command may not have run yet (it fires at server start, not link),
+# so we idempotently install here on the first event we see.
+HOOK_FILE="${KIRO_HOOKS_DIR:-$HOME/.kiro/hooks}/kiro-title.json"
+if [ ! -f "$HOOK_FILE" ]; then
+  HERDR_PLUGIN_ROOT="${HERDR_PLUGIN_ROOT:-$DIR/..}" bash "$DIR/install-kiro-hook.sh" >/dev/null 2>&1 || true
+fi
+
+# Event payload: Herdr provides it via HERDR_PLUGIN_EVENT_JSON (and on stdin).
+payload="${HERDR_PLUGIN_EVENT_JSON:-}"
+[ -n "$payload" ] || payload="$(cat 2>/dev/null)"
 [ -n "$payload" ] || exit 0
 
 read_field() {

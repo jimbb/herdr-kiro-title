@@ -1,4 +1,5 @@
 id = "kiro-title"
+name = "Kiro Title"
 version = "0.1.0"
 min_herdr_version = "0.9.0"
 description = "Auto-titles Kiro CLI panes with a short, model-written summary of the current task (parity with codex/grok titles)."
